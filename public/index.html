@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ассистент — все модели Groq</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .app {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            max-height: 1000px;
+        }
+        .header {
+            background: #1a1a2e;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .model-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            background: #2d2d44;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+        .model-selector label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .model-selector input[type="checkbox"] {
+            accent-color: #e94560;
+            width: 16px;
+            height: 16px;
+        }
+        .chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #fafafa;
+        }
+        .message {
+            max-width: 90%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: #1a1a2e;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.assistant {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+            max-width: 95%;
+        }
+        .message.assistant .model-name {
+            font-weight: bold;
+            color: #1a1a2e;
+            background: #eaeef2;
+            padding: 2px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .message.assistant img { max-width: 100%; border-radius: 12px; margin-top: 8px; }
+        .message.assistant pre {
+            background: #f4f4f4;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .message.assistant code { font-family: 'Courier New', monospace; }
+        .message.error { background: #ffe0e0; border-color: #e94560; }
+        .message .error-text { color: #e94560; font-weight: 500; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .input-area {
+            padding: 16px 24px 24px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .input-area select {
+            padding: 10px 14px;
+            border-radius: 30px;
+            border: 2px solid #ddd;
+            background: white;
+            font-size: 14px;
+            outline: none;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+            min-width: 150px;
+        }
+        .input-area input:focus { border-color: #1a1a2e; }
+        .input-area button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 30px;
+            background: #1a1a2e;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .input-area button:hover:not(:disabled) { background: #2d2d44; }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .input-area button.voice { background: #e94560; }
+        .input-area button.voice:hover:not(:disabled) { background: #c73652; }
+        .input-area button.image { background: #6c5ce7; }
+        .input-area button.image:hover:not(:disabled) { background: #5a4bd1; }
+        .status {
+            padding: 8px 24px;
+            font-size: 14px;
+            color: #888;
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        @media (max-width: 700px) {
+            .app { height: 100vh; max-height: none; border-radius: 0; }
+            .header { flex-direction: column; align-items: stretch; }
+            .model-selector { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <h1>🤖 Groq-мульти</h1>
+        <div class="model-selector" id="modelSelector">
+            <!-- чекбоксы будут добавлены скриптом -->
+        </div>
+    </div>
+    <div class="chat" id="chat"></div>
+    <div class="input-area">
+        <input type="text" id="input" placeholder="Запрос, код или описание картинки..." />
+        <select id="imageModelSelect">
+            <option value="black-forest-labs/flux-1.1-dev">Flux 1.1 Dev</option>
+            <option value="black-forest-labs/flux-schnell">Flux Schnell</option>
+            <option value="stability-ai/sdxl">Stable Diffusion XL</option>
+            <option value="stability-ai/stable-diffusion-3">SD3 (бета)</option>
+        </select>
+        <button id="voiceBtn" class="voice" title="Голосовой ввод">🎤</button>
+        <button id="imageBtn" class="image" title="Сгенерировать картинку">🎨</button>
+        <button id="sendBtn">➤</button>
+    </div>
+    <div class="status" id="status">Готов</div>
+</div>
+
+<script>
+    // === Список всех актуальных моделей Groq ===
+    const AVAILABLE_MODELS = [
+        { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B', desc: 'мощная' },
+        { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B', desc: 'баланс' },
+        { id: 'gemma2-9b-it', label: 'Gemma 2 9B', desc: 'быстрая' },
+        { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B', desc: 'мгновенная' },
+    ];
+
+    // === Элементы DOM ===
+    const chatEl = document.getElementById('chat');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const imageBtn = document.getElementById('imageBtn');
+    const statusEl = document.getElementById('status');
+    const modelSelector = document.getElementById('modelSelector');
+    const imageModelSelect = document.getElementById('imageModelSelect');
+
+    // === Генерация чекбоксов ===
+    let selectedModels = new Set();
+
+    function renderModelCheckboxes() {
+        modelSelector.innerHTML = '';
+        AVAILABLE_MODELS.forEach(m => {
+            const label = document.createElement('label');
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = m.id;
+            cb.checked = true;
+            cb.addEventListener('change', () => {
+                if (cb.checked) selectedModels.add(m.id);
+                else selectedModels.delete(m.id);
+                updateSendButton();
+            });
+            label.appendChild(cb);
+            label.append(`${m.label} (${m.desc})`);
+            modelSelector.appendChild(label);
+            if (cb.checked) selectedModels.add(m.id);
+        });
+        updateSendButton();
+    }
+
+    function updateSendButton() {
+        sendBtn.disabled = selectedModels.size === 0;
+        if (selectedModels.size === 0) {
+            statusEl.textContent = '⚠️ Выберите хотя бы одну модель';
+        } else {
+            statusEl.textContent = 'Готов';
+        }
+    }
+
+    renderModelCheckboxes();
+
+    // === История диалога ===
+    let history = [];
+
+    // === Рендер Markdown + подсветка ===
+    function renderMarkdown(text) {
+        let html = marked.parse(text);
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        temp.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+        return temp.innerHTML;
+    }
+
+    // === Добавление сообщения ===
+    function addMessage(role, content, options = {}) {
+        const { isImage = false, isError = false, modelName = null } = options;
+        const div = document.createElement('div');
+        div.className = `message ${role}`;
+        if (isError) div.classList.add('error');
+
+        if (isImage) {
+            div.innerHTML = `<img src="${content}" alt="Сгенерированное изображение" />`;
+        } else if (role === 'assistant' && !isError) {
+            let html = '';
+            if (modelName) {
+                html += `<span class="model-name">${modelName}</span>`;
+            }
+            html += renderMarkdown(content);
+            div.innerHTML = html;
+        } else {
+            div.textContent = content;
+        }
+        chatEl.appendChild(div);
+        chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    // === Отправка запроса к выбранным моделям Groq ===
+    async function sendMessage(userText) {
+        const text = userText.trim();
+        if (!text) return;
+        if (selectedModels.size === 0) {
+            statusEl.textContent = '⚠️ Выберите хотя бы одну модель';
+            return;
+        }
+
+        addMessage('user', text);
+        history.push({ role: 'user', content: text });
+
+        sendBtn.disabled = true;
+        voiceBtn.disabled = true;
+        imageBtn.disabled = true;
+        statusEl.textContent = `⏳ Отправляю запрос к ${selectedModels.size} моделям...`;
+
+        const modelsArray = Array.from(selectedModels);
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: history,
+                    models: modelsArray
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Ошибка сервера');
+            }
+
+            const data = await response.json();
+            const results = data.results;
+
+            results.forEach((item, index) => {
+                if (item.error) {
+                    addMessage('assistant', `❌ ${item.model}: ${item.error}`, { isError: true, modelName: item.model });
+                } else {
+                    addMessage('assistant', item.reply, { modelName: item.model });
+                    if (index === 0) {
+                        history.push({ role: 'assistant', content: item.reply });
+                    }
+                }
+            });
+
+            if (history.length > 20) history = history.slice(-20);
+
+            const firstReply = results.find(r => r.reply);
+            if (firstReply) speak(firstReply.reply);
+
+        } catch (error) {
+            addMessage('assistant', `❌ ${error.message}`, { isError: true });
+        } finally {
+            sendBtn.disabled = false;
+            voiceBtn.disabled = false;
+            imageBtn.disabled = false;
+            statusEl.textContent = 'Готов';
+            inputEl.value = '';
+            inputEl.focus();
+        }
+    }
+
+    // === Генерация картинки ===
+    async function generateImage(promptText) {
+        const prompt = promptText.trim() || inputEl.value.trim();
+        if (!prompt) {
+            statusEl.textContent = '⚠️ Введите описание картинки';
+            return;
+        }
+        addMessage('user', `🎨 Генерация картинки: "${prompt}"`);
+        sendBtn.disabled = true;
+        voiceBtn.disabled = true;
+        imageBtn.disabled = true;
+        statusEl.textContent = '🖼️ Генерирую изображение...';
+
+        const imageModel = imageModelSelect.value;
+
+        try {
+            const response = await fetch('/api/image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    prompt: prompt,
+                    model: imageModel 
+                })
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Ошибка генерации');
+            }
+            const data = await response.json();
+            addMessage('assistant', data.imageUrl, { isImage: true });
+            speak('Изображение готово');
+        } catch (error) {
+            addMessage('assistant', `❌ ${error.message}`, { isError: true });
+        } finally {
+            sendBtn.disabled = false;
+            voiceBtn.disabled = false;
+            imageBtn.disabled = false;
+            statusEl.textContent = 'Готов';
+            inputEl.value = '';
+            inputEl.focus();
+        }
+    }
+
+    // === Голосовой ввод ===
+    function startVoice() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            alert('Ваш браузер не поддерживает голосовой ввод.');
+            return;
+        }
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ru-RU';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        statusEl.textContent = '🎤 Слушаю...';
+        recognition.start();
+
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            inputEl.value = text;
+            statusEl.textContent = `Распознано: "${text}"`;
+            sendMessage(text);
+        };
+        recognition.onerror = (event) => {
+            statusEl.textContent = `❌ Ошибка: ${event.error}`;
+        };
+        recognition.onend = () => {
+            if (statusEl.textContent === '🎤 Слушаю...') {
+                statusEl.textContent = 'Готов';
+            }
+        };
+    }
+
+    // === Синтез речи ===
+    function speak(text) {
+        if (!window.speechSynthesis) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ru-RU';
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // === Обработчики событий ===
+    sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendMessage(inputEl.value);
+    });
+    voiceBtn.addEventListener('click', startVoice);
+    imageBtn.addEventListener('click', () => generateImage(inputEl.value));
+
+    // Приветствие
+    window.onload = () => {
+        addMessage('assistant', '👋 Привет! Я мульти-модельный ассистент. Выберите любые модели Groq (по умолчанию все) и задайте вопрос. Ответы от каждой модели появятся отдельно. Также могу генерировать картинки (выберите модель справа) и писать код с подсветкой.');
+    };
+</script>
+</body>
+</html>
